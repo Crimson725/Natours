@@ -5,19 +5,53 @@ import xss from "xss-clean";
 import rateLimit from "express-rate-limit";
 import hpp from "hpp";
 import helmet from "helmet";
+import * as path from "path";
 import tourRouter from "./routes/tourRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import reviewRouter from "./routes/reviewRoutes.js";
+import viewRouter from "./routes/viewRoutes.js";
 import AppError from "./appError.js";
 import globalErrorHandler from "./controllers/errorController.js";
 
 const __dirname = process.cwd();
 const app = express();
-
+// set the template engine
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "views"));
+// serving static files
+// pug can have access to the static files in this folder
+app.use(express.static(path.join(__dirname, "public")));
 // global middlewares
 // set security HTTP headers
-app.use(helmet());
-// development logging
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        "worker-src": ["blob:"],
+        "child-src": ["blob:", "https://js.stripe.com/"],
+        "img-src": ["'self'", "data: image/webp"],
+        "script-src": [
+          "'self'",
+          "https://api.mapbox.com",
+          "https://cdnjs.cloudflare.com",
+          "https://js.stripe.com/v3/",
+          "'unsafe-inline'",
+        ],
+        "connect-src": [
+          "'self'",
+          "ws://localhost:*",
+          "ws://127.0.0.1:*",
+          "http://127.0.0.1:*",
+          "http://localhost:*",
+          "https://*.tiles.mapbox.com",
+          "https://api.mapbox.com",
+          "https://events.mapbox.com",
+        ],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+  }),
+); // development logging
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
@@ -52,14 +86,13 @@ app.use(
     ],
   }),
 );
-// serving static files
-app.use(express.static(`${__dirname}/public`));
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   next();
 });
-// routes
+
+app.use("/", viewRouter);
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);

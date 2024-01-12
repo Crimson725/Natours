@@ -126,9 +126,7 @@ tourSchema.virtual("durationWeeks").get(function () {
 // virtual populate
 tourSchema.virtual("reviews", {
   ref: "Review",
-  // the name of field in other model
   foreignField: "tour",
-  // the id stored in the current model
   localField: "_id",
 });
 // runs before .save() and .create()
@@ -153,14 +151,8 @@ tourSchema.pre(/^find/, function (next) {
 
 tourSchema.post(/^find/, function (docs, next) {
   console.log(`Query took ${Date.now() - this.start} milliseconds`);
-  // console.log(docs);
   next();
 });
 
-// aggregation middleware
-// tourSchema.pre("aggregate", function (next) {
-//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-//   next();
-// });
 const Tour = mongoose.model("Tour", tourSchema, "tours");
 export default Tour;
