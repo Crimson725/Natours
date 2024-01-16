@@ -5,6 +5,7 @@ import displayMap from "./mapbox.js";
 import updateSettings from "./updateSettings.js";
 import bookTour from "./stripe.js";
 import showAlert from "./alerts.js";
+import { signup } from "../../controllers/authController.js";
 
 const mapBox = document.querySelector("#map");
 const loginForm = document.querySelector(".form--login");
