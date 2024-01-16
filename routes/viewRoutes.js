@@ -7,9 +7,9 @@ import {
   getAccount,
   updateUserData,
   getMyTours,
+  alerts,
 } from "../controllers/viewsController.js";
 import { isLoggedIn, protect } from "../controllers/authController.js";
-import alerts from "../public/js/alerts.js";
 
 const router = express.Router();
 router.use(alerts);
