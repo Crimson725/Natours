@@ -4,7 +4,7 @@ import crypto from "crypto";
 import User from "../models/userModel.js";
 import catchAsync from "../utils/catchAsync.js";
 import AppError from "../appError.js";
-import sendEmail from "../utils/email.js";
+import Email from "../utils/email.js";
 
 const signToken = (id) =>
   jsonwebtoken.sign({ id }, process.env.JWT_SECRET, {
@@ -37,15 +37,9 @@ const createSendToken = (user, statusCode, res) => {
 };
 
 const signup = catchAsync(async (req, res, next) => {
-  const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    photo: req.body.photo,
-    role: req.body.role,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm,
-    passwordChangedAt: req.body.passwordChangedAt,
-  });
+  const newUser = await User.create(req.body);
+  const url = `${req.protocol}://${req.get("host")}/me`;
+  await new Email(newUser, url).sendWelcome();
   createSendToken(newUser, 201, res);
 });
 const login = catchAsync(async (req, res, next) => {
@@ -62,6 +56,16 @@ const login = catchAsync(async (req, res, next) => {
   // 3) if everything ok, send token to client
   createSendToken(user, 200, res);
 });
+
+const logout = (req, res) => {
+  res.cookie("jwt", "loggedout", {
+    expires: new Date(Date.now() + 10 * 1000),
+    // the secure option makes sure that the cookie is only sent on an encrypted connection, in HTTPS
+    httpOnly: true,
+    // cookie cannot be accessed or modified in any way by the browser
+  });
+  res.status(200).json({ status: "success" });
+};
 const protect = catchAsync(async (req, res, next) => {
   let token;
   // 1) Getting token and check of it's there
@@ -70,6 +74,9 @@ const protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith("Bearer")
   ) {
     token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies.jwt) {
+    // get token from cookie
+    token = req.cookies.jwt;
   }
   if (!token) {
     return next(
@@ -105,6 +112,32 @@ const protect = catchAsync(async (req, res, next) => {
   }
   // GRANT ACCESS TO PROTECTED ROUTE
   req.user = currentUser;
+  res.locals.user = currentUser;
+  next();
+});
+// Only for rendered pages, no errors!
+const isLoggedIn = catchAsync(async (req, res, next) => {
+  let token;
+  // 1) Getting token and check of it's there
+  if (req.cookies.jwt && req.cookies.jwt !== "loggedout") {
+    // get token from cookie
+    token = req.cookies.jwt;
+    const decoded = await promisify(jsonwebtoken.verify)(
+      token,
+      process.env.JWT_SECRET,
+    );
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+      return next();
+    }
+    if (currentUser.changePasswordAfter(decoded.iat)) {
+      return next();
+    }
+    // THERE IS A LOGGED IN USER
+    // pug have access to res.locals
+    res.locals.user = currentUser;
+    return next();
+  }
   next();
 });
 const restrictTo =
@@ -130,19 +163,11 @@ const forgotPassword = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   // 3) Send it to user's email
-  const resetURL = `${req.protocol}://${req.get(
-    "host",
-  )}/api/v1/users/resetPassword/${resetToken}`;
-  const message = `Forgot your password? 
-  Submit a PATCH request with your new password 
-  and passwordConfirm to: ${resetURL}.\n
-  If you didn't forget your password, please ignore this email!`;
   try {
-    await sendEmail({
-      email: user.email,
-      subject: "Your password reset token (valid for 10 minutes)",
-      message: message,
-    });
+    const resetURL = `${req.protocol}://${req.get(
+      "host",
+    )}/api/v1/users/resetPassword/${resetToken}`;
+    await new Email(user, resetURL).sendPasswordReset();
     res.status(200).json({
       status: "success",
       message: "Token sent to email!",
@@ -211,4 +236,6 @@ export {
   forgotPassword,
   resetPassword,
   updatePassword,
+  isLoggedIn,
+  logout,
 };

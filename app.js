@@ -6,52 +6,73 @@ import rateLimit from "express-rate-limit";
 import hpp from "hpp";
 import helmet from "helmet";
 import * as path from "path";
+import cookieparser from "cookie-parser";
 import tourRouter from "./routes/tourRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import reviewRouter from "./routes/reviewRoutes.js";
 import viewRouter from "./routes/viewRoutes.js";
+import bookingRouter from "./routes/bookingRoutes.js";
 import AppError from "./appError.js";
 import globalErrorHandler from "./controllers/errorController.js";
+import cors from "cors";
 
 const __dirname = process.cwd();
 const app = express();
+app.use(cors());
 // set the template engine
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views"));
 // serving static files
 // pug can have access to the static files in this folder
 app.use(express.static(path.join(__dirname, "public")));
-// global middlewares
-// set security HTTP headers
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      directives: {
-        "worker-src": ["blob:"],
-        "child-src": ["blob:", "https://js.stripe.com/"],
-        "img-src": ["'self'", "data: image/webp"],
-        "script-src": [
-          "'self'",
-          "https://api.mapbox.com",
-          "https://cdnjs.cloudflare.com",
-          "https://js.stripe.com/v3/",
-          "'unsafe-inline'",
-        ],
-        "connect-src": [
-          "'self'",
-          "ws://localhost:*",
-          "ws://127.0.0.1:*",
-          "http://127.0.0.1:*",
-          "http://localhost:*",
-          "https://*.tiles.mapbox.com",
-          "https://api.mapbox.com",
-          "https://events.mapbox.com",
-        ],
-      },
-    },
     crossOriginEmbedderPolicy: false,
   }),
-); // development logging
+);
+
+// Further HELMET configuration for Security Policy (CSP)
+const scriptSrcUrls = [
+  "https://api.tiles.mapbox.com/",
+  "https://api.mapbox.com/",
+  "https://*.cloudflare.com",
+  "https://js.stripe.com/v3",
+  "https://checkout.stripe.com",
+];
+const styleSrcUrls = [
+  "https://api.mapbox.com/",
+  "https://api.tiles.mapbox.com/",
+  "https://fonts.googleapis.com/",
+  "https://www.myfonts.com/fonts/radomir-tinkov/gilroy/*",
+  " checkout.stripe.com",
+];
+const connectSrcUrls = [
+  "https://*.mapbox.com/",
+  "https://*.cloudflare.com",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:52191",
+  "*.stripe.com",
+];
+
+const fontSrcUrls = ["fonts.googleapis.com", "fonts.gstatic.com"];
+
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: [],
+      connectSrc: ["'self'", ...connectSrcUrls],
+      scriptSrc: ["'self'", ...scriptSrcUrls],
+      styleSrc: ["'self'", "'unsafe-inline'", ...styleSrcUrls],
+      workerSrc: ["'self'", "blob:"],
+      objectSrc: [],
+      imgSrc: ["'self'", "blob:", "data:"],
+      fontSrc: ["'self'", ...fontSrcUrls],
+      frameSrc: ["*.stripe.com", "*.stripe.network"],
+    },
+  }),
+);
+
+// development logging
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
@@ -68,6 +89,8 @@ app.use(
     limit: "10kb",
   }),
 );
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+app.use(cookieparser());
 
 // data sanitization against NoSQL query injection
 app.use(mongosanitize());
@@ -96,6 +119,7 @@ app.use("/", viewRouter);
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);
+app.use("/api/v1/bookings", bookingRouter);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

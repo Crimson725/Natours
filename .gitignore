@@ -2,3 +2,6 @@
 /.idea/
 .DS_Store
 /views/*.html
+/views/email/*.html
+*.env
+/.parcel-cache

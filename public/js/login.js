@@ -1,35 +1,35 @@
 /* eslint-disable */
-const login = (email, password) => {
-  fetch("/login", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-    headers: { "Content-Type": "application/json" },
-  })
-    .then((res) => {
-      if (res.redirected) window.location.href = res.url;
-      else if (res.status === 401) {
-        document.querySelector(".error").innerHTML =
-          "Invalid email or password";
-      }
-    })
-    .catch((err) => console.log(err));
+import axios from "axios";
+import showAlert from "./alerts.js";
+const login = async (email, password) => {
+  try {
+    const res = await axios({
+      method: "POST",
+      url: "http://localhost:3000/api/v1/users/login",
+      data: {
+        email,
+        password,
+      },
+    });
+    if (res.data.status === "success") {
+      showAlert("success", "Logged in successfully!");
+      window.setTimeout(() => {
+        location.assign("/");
+      }, 1500);
+    }
+  } catch (err) {
+    showAlert("error", err.response.data.message);
+  }
 };
-document.querySelector(".form").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const email = document.querySelector("#email").value;
-  const password = document.querySelector("#password").value;
-  const data = { email, password };
-  fetch("/login", {
-    method: "POST",
-    body: JSON.stringify(data),
-    headers: { "Content-Type": "application/json" },
-  })
-    .then((res) => {
-      if (res.redirected) window.location.href = res.url;
-      else if (res.status === 401) {
-        document.querySelector(".error").innerHTML =
-          "Invalid email or password";
-      }
-    })
-    .catch((err) => console.log(err));
-});
+const logout = async () => {
+  try {
+    const res = await axios({
+      method: "GET",
+      url: "http://localhost:3000/api/v1/users/logout",
+    });
+    if (res.data.status === "success") location.assign("/");
+  } catch (e) {
+    showAlert("error", "Error logging out! Try again.");
+  }
+};
+export { login, logout };

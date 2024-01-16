@@ -8,6 +8,8 @@ import {
   getUser,
   createUser,
   getMe,
+  uploadUserPhoto,
+  resizeUserPhoto,
 } from "../controllers/userController.js";
 import {
   signup,
@@ -17,6 +19,7 @@ import {
   resetPassword,
   updatePassword,
   restrictTo,
+  logout,
 } from "../controllers/authController.js";
 
 const router = express.Router();
@@ -24,6 +27,8 @@ const router = express.Router();
 router.post("/signup", signup);
 // for login
 router.post("/login", login);
+// for logout
+router.get("/logout", logout);
 //forgot password
 router.post("/forgotPassword", forgotPassword);
 //reset password
@@ -36,7 +41,7 @@ router.patch("/updateMyPassword", updatePassword);
 // get current user's profile
 router.get("/me", getMe, getUser);
 // update profile
-router.patch("/updateMe", updateMe);
+router.patch("/updateMe", uploadUserPhoto, resizeUserPhoto, updateMe);
 // delete profile
 router.delete("/deleteMe", deleteMe);
 
