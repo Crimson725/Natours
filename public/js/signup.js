@@ -24,3 +24,4 @@ const signup = async (name, email, password, passwordConfirm) => {
     showAlert("error", err.response.data.message);
   }
 };
+export { signup };
