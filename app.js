@@ -16,6 +16,7 @@ import viewRouter from "./routes/viewRoutes.js";
 import bookingRouter from "./routes/bookingRoutes.js";
 import AppError from "./appError.js";
 import globalErrorHandler from "./controllers/errorController.js";
+import { webhookCheckout } from "./controllers/bookingController.js";
 
 const __dirname = process.cwd();
 const app = express();
@@ -86,6 +87,11 @@ const limiter = rateLimit({
   message: "Too many requests from this IP, please try again in an hour!",
 });
 app.use("/api", limiter);
+app.post(
+  "/webhook-checkout",
+  express.raw({ type: "application/json" }),
+  webhookCheckout,
+);
 // body parser, reading data from body into req.body
 app.use(
   express.json({
