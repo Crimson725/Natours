@@ -8,6 +8,7 @@ import showAlert from "./alerts.js";
 
 const mapBox = document.querySelector("#map");
 const loginForm = document.querySelector(".form--login");
+const signupForm = document.querySelector(".form--signup");
 const logoutBtn = document.querySelector(".nav__el--logout");
 const updateUserDataForm = document.querySelector(".form-user-data");
 const updatePasswordForm = document.querySelector(".form-user-settings");
@@ -18,6 +19,18 @@ if (mapBox) {
     document.querySelector("#map").dataset.locations,
   );
   displayMap(locations);
+}
+if (signupForm) {
+  signupForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.querySelector("#name").value;
+    const email = document.querySelector("#email").value;
+    const password = document.querySelector("#password").value;
+    const passwordConfirm = document.querySelector("#passwordConfirm").value;
+    signupForm.querySelector(".btn--signup").textContent = "Signing up...";
+    signupForm.querySelector(".btn--signup").disabled = true;
+    signup(name, email, password, passwordConfirm);
+  });
 }
 if (loginForm) {
   loginForm.addEventListener("submit", (e) => {
