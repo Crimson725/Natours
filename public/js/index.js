@@ -28,8 +28,8 @@ if (signupForm) {
     const email = document.querySelector("#email").value;
     const password = document.querySelector("#password").value;
     const passwordConfirm = document.querySelector("#passwordConfirm").value;
-    signupForm.querySelector(".btn--signup").textContent = "Signing up...";
-    signupForm.querySelector(".btn--signup").disabled = true;
+    signupForm.querySelector(".btn--green").textContent = "Signing up...";
+    signupForm.querySelector(".btn--green").disabled = true;
     signup(name, email, password, passwordConfirm);
   });
 }
