@@ -23,6 +23,9 @@ const getCheckoutSession = catchAsync(async (req, res, next) => {
     unit_amount: tour.price * 100,
     currency: "usd",
   });
+  console.log(
+    `Success URL: ${req.protocol}://${req.get("host")}/my-tours?alert=booking`,
+  );
   const session = await stripeObj.checkout.sessions.create({
     payment_method_types: ["card"],
     success_url: `${req.protocol}://${req.get("host")}/my-tours?alert=booking`,
