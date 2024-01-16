@@ -19,6 +19,7 @@ import globalErrorHandler from "./controllers/errorController.js";
 
 const __dirname = process.cwd();
 const app = express();
+app.enable("trust proxy");
 app.use(cors());
 // set the template engine
 app.set("view engine", "pug");
