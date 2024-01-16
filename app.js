@@ -21,6 +21,7 @@ const __dirname = process.cwd();
 const app = express();
 app.enable("trust proxy");
 app.use(cors());
+app.options("*", cors());
 // set the template engine
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views"));
