@@ -7,6 +7,8 @@ import hpp from "hpp";
 import helmet from "helmet";
 import * as path from "path";
 import cookieparser from "cookie-parser";
+import cors from "cors";
+import compression from "compression";
 import tourRouter from "./routes/tourRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import reviewRouter from "./routes/reviewRoutes.js";
@@ -14,7 +16,6 @@ import viewRouter from "./routes/viewRoutes.js";
 import bookingRouter from "./routes/bookingRoutes.js";
 import AppError from "./appError.js";
 import globalErrorHandler from "./controllers/errorController.js";
-import cors from "cors";
 
 const __dirname = process.cwd();
 const app = express();
@@ -110,6 +111,7 @@ app.use(
   }),
 );
 
+app.use(compression());
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   next();

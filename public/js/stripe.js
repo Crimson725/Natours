@@ -9,7 +9,7 @@ const bookTour = async (tourId) => {
   );
   try {
     const session = await axios.get(
-      `http://localhost:3000/api/v1/bookings/checkout-session/${tourId}`,
+      `/api/v1/bookings/checkout-session/${tourId}`,
     );
     window.location.replace(session.data.session.url);
   } catch (err) {

@@ -139,7 +139,6 @@ const getMonthlyPlan = catchAsync(async (req, res, next) => {
       $limit: 12, // only show 12 months
     },
   ]);
-  console.log(plan);
   res.status(200).json({
     status: "success",
     data: {
