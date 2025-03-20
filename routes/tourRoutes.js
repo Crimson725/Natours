@@ -12,6 +12,8 @@ import {
   getDistances,
   uploadTourImages,
   resizeTourImages,
+  getTourByName,
+  getMyTours,
 } from "../controllers/tourController.js";
 import { protect, restrictTo } from "../controllers/authController.js";
 import reviewRouter from "./reviewRoutes.js";
@@ -51,5 +53,9 @@ router
     updateTour,
   )
   .delete(protect, restrictTo("admin", "lead-guide"), deleteTour);
+
+router.get("/name/:tourName", getTourByName);
+
+router.get("/my-tours", protect, getMyTours);
 
 export default router;

@@ -2,6 +2,7 @@ import multer from "multer";
 import sharp from "sharp";
 import Tour from "../models/tourModel.js";
 import catchAsync from "../utils/catchAsync.js";
+import Booking from "../models/bookingModel.js";
 import {
   createOne,
   deleteOne,
@@ -212,6 +213,34 @@ const getDistances = catchAsync(async (req, res, next) => {
     },
   });
 });
+const getTourByName = catchAsync(async (req, res, next) => {
+  const tour = await Tour.findOne({ slug: req.params.tourName }).populate({
+    path: "reviews",
+    fields: "review rating user",
+  });
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      data: tour,
+    },
+  });
+});
+
+const getMyTours = catchAsync(async (req, res, next) => {
+  const bookings = await Booking.find({ user: req.user.id });
+
+  const tourIds = bookings.map((el) => el.tour);
+
+  const tours = await Tour.find({ _id: { $in: tourIds } });
+
+  res.status(200).json({
+    status: "success",
+    data: tours,
+  });
+});
+
+
 export {
   getAllTours,
   getTour,
@@ -225,4 +254,6 @@ export {
   getDistances,
   uploadTourImages,
   resizeTourImages,
+  getTourByName,
+  getMyTours,
 };

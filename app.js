@@ -20,7 +20,9 @@ import { webhookCheckout } from "./controllers/bookingController.js";
 
 const __dirname = process.cwd();
 const app = express();
-app.enable("trust proxy");
+// Update the trust proxy configuration to be more secure
+// Instead of blindly trusting all proxies, specify trusted proxies
+app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 app.use(cors());
 app.options("*", cors());
 // set the template engine
@@ -85,6 +87,14 @@ const limiter = rateLimit({
   max: 100,
   windowMs: 60 * 60 * 1000,
   message: "Too many requests from this IP, please try again in an hour!",
+  // Add configuration for proper IP tracking
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  // Specify a custom handler for getting the client IP
+  keyGenerator: (req) => {
+    // Get the left-most forwarded IP if available, otherwise use the connection's remote address
+    return req.ip; // req.ip will use the Express trust proxy setting
+  },
 });
 app.use("/api", limiter);
 app.post(
