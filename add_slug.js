@@ -2,9 +2,8 @@ import mongoose from "mongoose";
 import slugify from "slugify";
 import { config } from "dotenv";
 import Tour from "./models/tourModel.js";
-import User from "./models/userModel.js";
 
-config({ path: "./config.env" });
+config({ path: "./.env" });
 
 const connectionString = process.env.DATABASE.replace(
   "<password>",

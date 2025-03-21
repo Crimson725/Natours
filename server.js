@@ -8,7 +8,7 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
-config({ path: "./config.env" });
+config({ path: "./.env" });
 const DB = process.env.DATABASE.replace(
   "<password>",
   process.env.DATABASE_PASSWORD,

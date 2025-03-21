@@ -4,7 +4,7 @@ import fs from "fs";
 import Tour from "../../models/tourModel.js";
 
 configDotenv({
-  path: "../.././config.env",
+  path: "../.././.env",
 });
 const DB = process.env.DATABASE.replace(
   "<PASSWORD>",
