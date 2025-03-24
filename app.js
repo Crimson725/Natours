@@ -22,12 +22,12 @@ const __dirname = process.cwd();
 const app = express();
 // Update the trust proxy configuration to be more secure
 // Instead of blindly trusting all proxies, specify trusted proxies
-app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+app.set("trust proxy", ["loopback", "linklocal", "uniquelocal"]);
 app.use(cors());
 app.options("*", cors());
 // set the template engine
-app.set("view engine", "pug");
-app.set("views", path.join(__dirname, "views"));
+// app.set("view engine", "pug");
+// app.set("views", path.join(__dirname, "views"));
 // serving static files
 // pug can have access to the static files in this folder
 app.use(express.static(path.join(__dirname, "public")));
@@ -91,10 +91,7 @@ const limiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   // Specify a custom handler for getting the client IP
-  keyGenerator: (req) => {
-    // Get the left-most forwarded IP if available, otherwise use the connection's remote address
-    return req.ip; // req.ip will use the Express trust proxy setting
-  },
+  keyGenerator: (req) => req.ip, // req.ip will use the Express trust proxy setting
 });
 app.use("/api", limiter);
 app.post(
